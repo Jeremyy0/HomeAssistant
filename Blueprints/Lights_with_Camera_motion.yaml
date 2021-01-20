@@ -25,14 +25,15 @@ blueprint:
           min: 0
           max: 60
           unit_of_measurement: minutes
-
-
-description: Turn on Porch Lights with Motion Detection
 trigger:
-  platform: state
-  entity_id: !input motion_entity
-  from: "off"
-  to: "on"
+  - type: motion
+    platform: device
+    entity_id: !input motion_entity
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
 condition:
   - condition: state
     entity_id: sun.sun
@@ -44,8 +45,7 @@ action:
   - wait_for_trigger:
       - type: no_motion
         platform: device
-        device_id: a56d00763295c8f406e5e6ed14a62d28
-        entity_id: binary_sensor.motion_front_door
+        entity_id: !input motion_entity
         domain: binary_sensor
         for:
           hours: 0
