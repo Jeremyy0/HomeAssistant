@@ -16,16 +16,16 @@ blueprint:
       selector:
         target:
           entity:
-            domain: light
+            domain: switch
     no_motion_wait:
       name: Wait time
       description: Time to leave the light on after last motion is detected.
-      default: 300
+      default: 5
       selector:
         number:
           min: 0
-          max: 3600
-          unit_of_measurement: seconds
+          max: 60
+          unit_of_measurement: minutes
 
 
 description: Turn on Porch Lights with Motion Detection
@@ -40,8 +40,7 @@ condition:
     state: below_horizon
 action:
   - type: turn_on
-    device_id: 9286837d2a9527d51b9bcfb9d090f096
-    entity_id: switch.32100611c82b96441b08
+    entity_id: !input device_target
     domain: switch
   - wait_for_trigger:
       - type: no_motion
@@ -51,10 +50,9 @@ action:
         domain: binary_sensor
         for:
           hours: 0
-          minutes: 5
+          minutes: !input no_motion_wait
           seconds: 0
   - type: turn_off
-    device_id: 9286837d2a9527d51b9bcfb9d090f096
-    entity_id: switch.32100611c82b96441b08
+    entity_id: !input device_target
     domain: switch
 mode: single
