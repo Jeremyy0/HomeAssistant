@@ -3,7 +3,7 @@ blueprint:
   name: Motion-activated Device
   description: Turn on a light when motion is detected.
   domain: automation
-  source_url: https://github.com/Jeremyy0/HomeAssistant/Lights_with_Camera.yaml
+  source_url: https://github.com/Jeremyy0/HomeAssistant/blob/main/Blueprints/Lights_with_Camera_motion.yaml
   input:
     motion_entity:
       name: Motion Sensor
