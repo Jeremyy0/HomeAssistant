@@ -10,6 +10,15 @@ blueprint:
         entity:
           domain: binary_sensor
           device_class: motion
+    motion_wait:
+      name: Motion Wait time
+      description: Motion detection duration before turning on lights.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 30
+          unit_of_measurement: seconds
     light_target:
       name: Light
       selector:
@@ -39,7 +48,7 @@ trigger:
   for:
     hours: 0
     minutes: 0
-    seconds: 2
+    seconds: !input motion_wait
 condition:
   - condition: state
     entity_id: sun.sun
