@@ -40,6 +40,10 @@ trigger:
     hours: 0
     minutes: 0
     seconds: 2
+condition:
+  - condition: state
+    entity_id: sun.sun
+    state: below_horizon
 action:
   - service: switch.turn_on
     target: !input light_target
