@@ -1,0 +1,70 @@
+blueprint:
+  name: UnifiProtectWithTuyaLights
+  description: Turn on a light when motion is detected.
+  domain: automation
+  source_url: https://github.com/Jeremyy0/HomeAssistant/blob/main/Blueprints/UnifiProtectWithTuyaLights.yaml
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    motion_wait:
+      name: Motion Wait time
+      description: Motion detection duration before turning on lights.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 30
+          unit_of_measurement: seconds
+    light_target:
+      name: Light
+      selector:
+        target:
+          entity:
+            domain: switch
+    no_motion_wait:
+      name: Wait time
+      description: Time to leave the light on after last motion is detected.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 59
+          unit_of_measurement: minutes
+
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  platform: state
+  entity_id: !input motion_entity
+  from: "off"
+  to: "on"
+  for:
+    hours: 0
+    minutes: 0
+    seconds: !input motion_wait
+condition:
+  - condition: state
+    entity_id: sun.sun
+    state: below_horizon
+action:
+  - service: switch.turn_on
+    target: !input light_target
+  - wait_for_trigger:
+      platform: state
+      entity_id: !input motion_entity
+      from: "on"
+      to: "off"
+      for:
+        hours: 0
+        minutes: !input no_motion_wait
+        seconds: 0
+        #  - delay: !input no_motion_wait
+  - service: switch.turn_off
+    target: !input light_target
