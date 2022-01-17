@@ -1,0 +1,144 @@
+blueprint:
+  name: UnifiProtectWithTuyaLightsScheduler
+  description: Turn on a light when motion is detected.
+  domain: automation
+  source_url: https://github.com/Jeremyy0/HomeAssistant/blob/main/Blueprints/UnifiProtectWithTuyaLights.yaml
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    motion_wait:
+      name: Motion Wait time
+      description: Motion detection duration before turning on lights.
+      default: 5
+      selector:
+        number:
+          min: 0.0
+          max: 30.0
+          unit_of_measurement: seconds
+          mode: slider
+          step: 1.0
+    light_target:
+      name: Light
+      selector:
+        target:
+          entity:
+            domain: switch
+    no_motion_wait:
+      name: Wait time
+      description: Time to leave the light on after last motion is detected.
+      default: 5
+      selector:
+        number:
+          min: 0.0
+          max: 59.0
+          unit_of_measurement: minutes
+          mode: slider
+          step: 1.0
+    monday_enabled:
+      name: Monday
+      default: true
+      selector:
+        boolean:
+    tuesday_enabled:
+      name: Tuesday
+      default: true
+      selector:
+        boolean:
+    wednesday_enabled:
+      name: Wednesday
+      default: true
+      selector:
+        boolean:
+    thursday_enabled:
+      name: Thursday
+      default: true
+      selector:
+        boolean:
+    friday_enabled:
+      name: Friday
+      default: true
+      selector:
+        boolean:
+    saturday_enabled:
+      name: Saturday
+      default: true
+      selector:
+        boolean:
+    sunday_enabled:
+      name: Sunday
+      default: true
+      selector:
+        boolean:
+
+    time_on:
+      name: 'Timeslot from'
+      default: "00:00:00"
+      selector:
+        time:
+    time_off:
+      name: 'Timeslot to'
+      default: "23:59:59"
+      selector:
+        time:
+
+
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  monday_enabled: !input monday_enabled
+  tuesday_enabled: !input tuesday_enabled
+  wednesday_enabled: !input wednesday_enabled
+  thursday_enabled: !input thursday_enabled
+  friday_enabled: !input friday_enabled
+  saturday_enabled: !input saturday_enabled
+  sunday_enabled: !input sunday_enabled
+  time_on: !input time_on
+  time_off: !input time_off
+
+trigger:
+  platform: state
+  entity_id: !input 'motion_entity'
+  from: 'off'
+  to: 'on'
+  for:
+    hours: 0
+    minutes: 0
+    seconds: !input 'motion_wait'
+condition:
+
+- condition: template
+  value_template: >
+      {% set current_day = now().weekday() | int %}
+      {{
+        (current_day == 0 and monday_enabled) or
+        (current_day == 1 and tuesday_enabled) or
+        (current_day == 2 and wednesday_enabled) or
+        (current_day == 3 and thursday_enabled) or
+        (current_day == 4 and friday_enabled) or
+        (current_day == 5 and saturday_enabled) or
+        (current_day == 6 and sunday_enabled)
+      }}
+- condition: time
+  after: !input time_on
+  before: !input time_off
+
+action:
+- service: switch.turn_on
+  target: !input 'light_target'
+- wait_for_trigger:
+    platform: state
+    entity_id: !input 'motion_entity'
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: !input 'no_motion_wait'
+      seconds: 0
+- service: switch.turn_off
+  target: !input 'light_target'
